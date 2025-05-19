@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE "Answer" ALTER COLUMN "greade" DROP NOT NULL,
+ALTER COLUMN "feedback" DROP NOT NULL,
+ALTER COLUMN "status" DROP NOT NULL;
