@@ -245,4 +245,74 @@ router.get('/byUser/:user_id', authorizeRole("admin"), async (req, res) => {
     }
 });
 
+
+/* User Can Edit there Repo  Only*/
+router.put('/userEdit' , authorizeRole("user") , async (req,res) => {
+    const { answer_id , task_id } = req.body;
+    let { repo } = req.body;
+    const user_id = req.user.id;
+
+    if(!answer_id || !task_id || !repo)
+        return res.status(403).json({message : "invalid data parsing"});
+    try {
+        const is_submitted = await prisma.answer.findFirst({
+            where : {
+                task : parseInt(task_id),
+                user_id : parseInt(user_id),
+                id : parseInt(answer_id)
+            }
+        });
+
+        const task = await prisma.task.findUnique({
+            select : {
+                limit : true
+            },
+            where : {
+                id : parseInt(task_id)
+            }
+            })
+                
+            if(!is_submitted)
+                return res.status(403).json({message : "The User has not submit this task !"});
+
+            if(is_submitted.grade !== null && task.limit < Date.now())
+                return res.status(403).json({ message : "You can't edit your answer now!" });
+
+
+        
+        if (!isValidRepoLink(repo)) 
+            return res.status(400).json({ message: "Repository link is invalid." });
+
+        repo = convertGitLinkToHttp(repo);
+
+        const repoStatus = await gitCheck(repo);
+        if (repoStatus !== 'public')
+            return res.status(403).json({ message: `Repository is ${repoStatus}.` });
+
+        
+        const repoUpdate = await prisma.answer.update({
+            data :{
+                repo : repo
+            },
+            where : {
+                id: parseInt(answer_id)
+            }
+        });
+
+        await sendEmail(
+            req.user.email,
+            "Repository Update",
+            `Dear ${req.user.first_name},\nYou have successfully Changed the Repository of task. \n${repoUpdate.repo}\n At : ${new Date().toLocaleString()} `
+        );
+
+        res.status(200).json({message : "Repository Changed Successfully ." ,repoUpdate});
+
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+     
+});
+
+
+
 export default router;
