@@ -1,6 +1,6 @@
 import express from "express";
 import prisma from '../../prismaClient.js'
-import authorizeRole from '../../middlware/authorizeRole.js'
+import authorizeRole from '../../middleware/authorizeRole.js'
 import { sendEmail } from '../../utils/mailer.js'
 
 const router = express.Router();
@@ -58,9 +58,9 @@ router.post('/create' , authorizeRole("admin") ,async(req,res) => {
 
             There is a new task!
 
-            <b>Task Title:</b> ${newTask.title}<br>
-            <b>Description:</b> ${newTask.desc}<br>
-            <b>Deadline:</b> ${newTask.limit}<br>
+            Task Title: ${newTask.title}
+            Description: ${newTask.desc}
+            Deadline: ${newTask.limit}
 
             Good luck!
             `;

@@ -1,10 +1,10 @@
 import express from "express";
 import prisma from "../../prismaClient.js";
-import {isValidRepoLink} from '../../utils/helper.js'
-import {convertGitLinkToHttp} from '../../utils/helper.js'
-import {gitCheck} from '../../utils/gitCheck.js'
-import {sendEmail} from '../../utils/mailer.js'
-import authorizeRole from '../../middlware/authorizeRole.js'
+import { isValidRepoLink } from '../../utils/helper.js'
+import { convertGitLinkToHttp } from '../../utils/helper.js'
+import { gitCheck } from '../../utils/gitCheck.js'
+import { sendEmail } from '../../utils/mailer.js'
+import authorizeRole from '../../middleware/authorizeRole.js'
 const router = express.Router();
 
 router.post('/submit',authorizeRole("user") , async (req,res) => {
@@ -72,19 +72,15 @@ router.post('/submit',authorizeRole("user") , async (req,res) => {
 
 
 router.put('/evaluate', authorizeRole("admin") ,async (req,res) => {
-    const { user_id , task_id , answer_id , grade , feedback=" " } = req.body;
+    const {  answer_id , grade , feedback=" " } = req.body;
     const admin = req.user;
     try {
 
-        if (isNaN(user_id) || isNaN(answer_id) || isNaN(task_id) || isNaN(grade) )
+        if (isNaN(answer_id) || isNaN(grade) )
             return res.status(400).json({ message: "Invalid input data type" });
 
-        const is_Exist = await prisma.answer.findFirst({
-            where : {
-                id : parseInt(answer_id),
-                user_id : parseInt(user_id) ,
-                task_id : parseInt(task_id)
-            }
+        const is_Exist = await prisma.answer.findUnique({
+            where: { id: parseInt(answer_id) }
         });
 
         if(!is_Exist)
@@ -107,19 +103,14 @@ router.put('/evaluate', authorizeRole("admin") ,async (req,res) => {
         });
 
         const user = await prisma.user.findUnique({
-            where : {
-                id : parseInt(user_id)
-            }
-        })
+            where: { id: is_Exist.user_id }
+        });
 
         const task = await prisma.task.findUnique({
-            where : {
-                id : parseInt(task_id)
-            }
-        })
+            where: { id: is_Exist.task_id }
+        });
 
         
-
         await sendEmail(user.email,
             "Task Feedback",
             `Dear ${user.first_name},\n\n
@@ -312,7 +303,5 @@ router.put('/userEdit' , authorizeRole("user") , async (req,res) => {
     }
      
 });
-
-
 
 export default router;
