@@ -7,13 +7,13 @@ const router = express.Router();
 
 router.post('/submit',authorizeRole("user") , submit);
 
-router.put('/evaluate', authorizeRole("admin") ,evaluate);
-
 router.get('/', authorizeRole("admin"), getAllAnswers);
 
 router.get('/mySub',authorizeRole("user"), mySub);
 
 router.get('/byUser/:user_id', authorizeRole("admin"), getAnsweByUserId);
+
+router.put('/evaluate', authorizeRole("admin") ,evaluate);
 /* User Can Edit there Repo  Only*/
 router.put('/repoEdit' , authorizeRole("user") , repoEdit);
 

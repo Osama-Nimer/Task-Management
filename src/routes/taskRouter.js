@@ -10,7 +10,7 @@ router.put('/update' , authorizeRole("admin"), update);
 
 router.delete('/delete/:id' , authorizeRole("admin") , deleteTask)
 
-router.get('/all',getAllTasks );
+router.get('/all',getAllTasks);
 
 router.get('/task/:id' , getTaskById)
 
