@@ -121,6 +121,7 @@ export const evaluate = async (req,res) => {
         res.status(500).json({message : error.message})
     }
 }
+
 export const getAllAnswers = async (req,res) => {
     try {
         const answers = await prisma.answer.findMany({
@@ -159,6 +160,7 @@ export const getAllAnswers = async (req,res) => {
         res.status(500).json({message : error.message});
     }
 }
+
 export const mySub = async (req,res) => {
     const user = req.user;
 
@@ -189,6 +191,7 @@ export const mySub = async (req,res) => {
         res.status(500).json({message : error.message});
     }
 }
+
 export const getAnsweByUserId = async (req,res) => {
     const user_id = parseInt(req.params.user_id);
     
@@ -226,6 +229,7 @@ export const getAnsweByUserId = async (req,res) => {
         res.status(500).json({ message: error.message });
     }
 }
+
 export const repoEdit = async (req,res) => {
     const { answer_id , task_id } = req.body;
     let { repo } = req.body;
