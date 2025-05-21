@@ -4,13 +4,13 @@ import dotenv from 'dotenv'
 import helmet from 'helmet';
 import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
-import authRouter from './routes/auth/authRouter.js'
-import taskRouter from './routes/Task/taskRouter.js';
-import asnwerRouter from './routes/answer/answerRouter.js';
+import authRouter from './routes/authRouter.js'
+import taskRouter from './routes/taskRouter.js';
+import asnwerRouter from './routes/answerRouter.js';
 
 dotenv.config();
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8000;
 
 
 /* Middleware */
@@ -27,7 +27,6 @@ app.use((err, req, res, next) => {
 });
   
 /* Middleware */
-
 
 app.use('/auth' , authRouter);
 app.use('/task' , taskRouter);

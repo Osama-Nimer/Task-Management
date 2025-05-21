@@ -1,13 +1,10 @@
-import express from "express";
-import prisma from "../../prismaClient.js";
-import { isValidRepoLink } from '../../utils/helper.js'
-import { convertGitLinkToHttp } from '../../utils/helper.js'
-import { gitCheck } from '../../utils/gitCheck.js'
-import { sendEmail } from '../../utils/mailer.js'
-import authorizeRole from '../../middleware/authorizeRole.js'
-const router = express.Router();
+import prisma from "../prismaClient.js";
+import { isValidRepoLink } from '../utils/helper.js'
+import { convertGitLinkToHttp } from '../utils/helper.js'
+import { gitCheck } from '../utils/gitCheck.js'
+import { sendEmail } from '../utils/mailer.js'
 
-router.post('/submit',authorizeRole("user") , async (req,res) => {
+export const submit = async (req,res) => {
     let {task_id , repo } = req.body;
     const user_id = req.user.id;
 
@@ -67,11 +64,9 @@ router.post('/submit',authorizeRole("user") , async (req,res) => {
     } catch (error) {
         return res.status(500).json({ message: error.message });
     }
-});
+}
 
-
-
-router.put('/evaluate', authorizeRole("admin") ,async (req,res) => {
+export const evaluate = async (req,res) => {
     const {  answer_id , grade , feedback=" " } = req.body;
     const admin = req.user;
     try {
@@ -125,9 +120,8 @@ router.put('/evaluate', authorizeRole("admin") ,async (req,res) => {
     } catch (error) {
         res.status(500).json({message : error.message})
     }
-});
-
-router.get('/',authorizeRole("admin"),async(req,res) => {
+}
+export const getAllAnswers = async (req,res) => {
     try {
         const answers = await prisma.answer.findMany({
             select : {
@@ -164,9 +158,8 @@ router.get('/',authorizeRole("admin"),async(req,res) => {
     } catch (error) {
         res.status(500).json({message : error.message});
     }
-});
-
-router.get('/mySub',authorizeRole("user"),async(req,res) => {
+}
+export const mySub = async (req,res) => {
     const user = req.user;
 
     try {
@@ -195,10 +188,8 @@ router.get('/mySub',authorizeRole("user"),async(req,res) => {
     } catch (error) {
         res.status(500).json({message : error.message});
     }
-});
-
-
-router.get('/byUser/:user_id', authorizeRole("admin"), async (req, res) => {
+}
+export const getAnsweByUserId = async (req,res) => {
     const user_id = parseInt(req.params.user_id);
     
     if (isNaN(user_id)) 
@@ -234,11 +225,8 @@ router.get('/byUser/:user_id', authorizeRole("admin"), async (req, res) => {
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
-});
-
-
-/* User Can Edit there Repo  Only*/
-router.put('/userEdit' , authorizeRole("user") , async (req,res) => {
+}
+export const repoEdit = async (req,res) => {
     const { answer_id , task_id } = req.body;
     let { repo } = req.body;
     const user_id = req.user.id;
@@ -302,6 +290,4 @@ router.put('/userEdit' , authorizeRole("user") , async (req,res) => {
         res.status(500).json({ message: error.message });
     }
      
-});
-
-export default router;
+}

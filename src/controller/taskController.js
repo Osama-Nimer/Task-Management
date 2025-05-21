@@ -1,11 +1,8 @@
-import express from "express";
-import prisma from '../../prismaClient.js'
-import authorizeRole from '../../middleware/authorizeRole.js'
-import { sendEmail } from '../../utils/mailer.js'
+import prisma from '../prismaClient.js'
 
-const router = express.Router();
+import { sendEmail } from '../utils/mailer.js'
 
-router.post('/create' , authorizeRole("admin") ,async(req,res) => {
+export const create = async (req,res)=> {
     const { title , desc , limit } = req.body;
     try {
         const isFound = await prisma.task.findUnique({
@@ -71,9 +68,9 @@ router.post('/create' , authorizeRole("admin") ,async(req,res) => {
     } catch (error) {
         return res.status(500).json({ message: error.message });
     }
-});
+}
 
-router.put('/update' , authorizeRole("admin"), async(req , res) => {
+export const update = async (req , res) => {
     const {id ,title , desc , limit} = req.body;
     try {
         const isFound = await prisma.task.findUnique({
@@ -110,9 +107,9 @@ router.put('/update' , authorizeRole("admin"), async(req , res) => {
     } catch (error) {
         res.status(500).json({message : error.message});
     }
-});
+}
 
-router.delete('/delete/:id' , authorizeRole("admin") , async (req,res) => {
+export const deleteTask = async (req,res) => {
     const  id = req.params.id;
 
     try {
@@ -137,9 +134,9 @@ router.delete('/delete/:id' , authorizeRole("admin") , async (req,res) => {
         res.status(500).json({message : error.message});
     }
     
-})
+}
 
-router.get('/all', async (req,res)=>{
+export const getAllTasks = async (req,res)=>{
     try {
         const tasks = await prisma.task.findMany({
             select : {
@@ -159,10 +156,9 @@ router.get('/all', async (req,res)=>{
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
-});
+}
 
-
-router.get('/task/:id' , async (req,res) => {
+export const getTaskById = async (req,res) => {
     const id = req.params.id;
     try {
         const task = await prisma.task.findUnique({
@@ -178,6 +174,4 @@ router.get('/task/:id' , async (req,res) => {
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
-})
-
-export default router;
+}

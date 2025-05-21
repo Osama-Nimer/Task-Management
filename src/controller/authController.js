@@ -1,23 +1,10 @@
-import express from 'express';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
-import prisma from '../../prismaClient.js'
-import { generateVerificationCode } from '../../utils/helper.js'
-import { sendEmail } from '../../utils/mailer.js'
-import authorizeRole from '../../middleware/authorizeRole.js'
-import rateLimit from 'express-rate-limit';
-const router = express.Router();
+import prisma from '../prismaClient.js';
+ import { generateVerificationCode } from '../utils/helper.js';
+ import { sendEmail } from '../utils/mailer.js';
 
-router.use(express.json());
-const loginLimiter = rateLimit({
-    windowMs: 10 * 60 * 1000,
-    max: 5,
-    keyGenerator: (req) => req.body.email || req.ip,
-    message: 'Too many login attempts for this user, please try again after 10 minutes',
-  });
-
-
-router.post('/register' , async (req , res) => {
+export const register = async (req , res) => {
     const {first_name , last_name , email , role = "user" , password} = req.body;
     const hashedPass = bcrypt.hashSync(password,10);    
     try {
@@ -81,10 +68,9 @@ router.post('/register' , async (req , res) => {
        res.status(500).json(error.message) 
     }
     
-});
+};
 
-
-router.post('/sendCode', authorizeRole("user"),async(req,res)=>{
+export const sendCode = async (req, res) => {
     const  user  = req.user;
     const v_code  = generateVerificationCode();
     const hashCode = bcrypt.hashSync(v_code,10);
@@ -107,10 +93,9 @@ router.post('/sendCode', authorizeRole("user"),async(req,res)=>{
     } catch (error) {
         res.status(500).json({ message: error.message});
     }
-})
+};
 
-
-router.post('/verification', authorizeRole("user"), async (req, res) => {
+export const verifyCode = async (req, res) => {
     const { code } = req.body;
     const email = req.user.email
     try {
@@ -165,9 +150,9 @@ router.post('/verification', authorizeRole("user"), async (req, res) => {
     } catch (error) {
         return res.status(500).json({ error: error.message });
     }
-});
+};
 
-router.post('/login' ,  loginLimiter ,async (req , res) => {
+export const login = async (req,res) => {
     const {email , password} = req.body;
     try {
         const user = await prisma.user.findUnique({
@@ -212,20 +197,19 @@ router.post('/login' ,  loginLimiter ,async (req , res) => {
     } catch (error) {
         res.status(500).json({ message: error.message});
     }
-});
+};
 
 
-router.post('/logout' , async (req , res) => {
+export const logout = async (_req ,res)=>{
     res.clearCookie('token', {
         httpOnly: true,
         sameSite: 'strict',
         secure: false 
     });
     res.status(200).json({ message: "Logged out successfully" });
-})
+}
 
-/* authorizeRole("admin") :  Middlware for admins check  */
-router.get('/all' , authorizeRole("admin") , async (req,res) => {
+export const getAllUsers = async (_req, res) => {
     try {
         const users = await prisma.user.findMany({
             select: {
@@ -246,9 +230,9 @@ router.get('/all' , authorizeRole("admin") , async (req,res) => {
     } catch (error) {
         res.status(500).json({message : error.message});
     }  
-});
+};
 
-router.put('/updateRole/:id' ,authorizeRole("admin") ,async (req,res) => {
+export const updateUserRole = async (req, res) => {
     const id = req.params.id;
 
     try {
@@ -272,7 +256,4 @@ router.put('/updateRole/:id' ,authorizeRole("admin") ,async (req,res) => {
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
-})
-
-
-export default router;
+};
