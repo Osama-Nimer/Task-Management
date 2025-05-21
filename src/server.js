@@ -1,21 +1,24 @@
 import express from 'express';
+
 import cors from 'cors';
 import dotenv from 'dotenv'
 import helmet from 'helmet';
 import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
+
 import authRouter from './routes/authRouter.js'
 import taskRouter from './routes/taskRouter.js';
 import asnwerRouter from './routes/answerRouter.js';
 
 dotenv.config();
+
 const app = express();
 const PORT = process.env.PORT || 8000;
 
 
 /* Middleware */
 
-
+app.use(express.urlencoded({ extended: true }));
 app.use(morgan('dev'));
 app.use(helmet());
 app.use(cors());
