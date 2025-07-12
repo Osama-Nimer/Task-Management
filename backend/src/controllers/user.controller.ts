@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { db } from '../configs/db.config'; 
 import { users } from '../db/schema';
-import { eq } from 'drizzle-orm';
+import { eq, is } from 'drizzle-orm';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import {codeGenerator} from '../utils/codeGenerator';
@@ -14,6 +14,11 @@ export const Register = async (req: Request, res: Response) => {
     return;
   }
   try {
+    const is_Exsit = await db.select().from(users).where(eq(users.email , email));
+    if(is_Exsit){
+      res.status(404).json({message : "This Email Already Used !"});
+      return;
+    }
     const hashPass = await bcrypt.hashSync(password,12);
     const [newUser] = await db
     .insert(users)
