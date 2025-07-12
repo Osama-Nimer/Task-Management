@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { db } from '../configs/db.config'; 
 import { users } from '../db/schema';
-import { eq, is } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import {codeGenerator} from '../utils/codeGenerator';
@@ -25,7 +25,7 @@ export const Register = async (req: Request, res: Response) => {
     .values({
         firstName : first_name, 
         lastName : last_name ,
-        email : email ,
+        email : email,
         password : hashPass
       })
       .returning();
@@ -95,9 +95,9 @@ export const verifyCode = async (req: Request, res: Response) => {
           verified: updatedUser.verified,
         },
         process.env.JWT_SECRET as string,
-        { expiresIn: "1h" }
+        { expiresIn: "15m" }
       );
-    res.status(200).json({ message: "User verified successfully" });
+    res.status(200).json({ message: "User verified successfully" ,token});
     return;
   } catch (error: any) {
     res.status(500).json({ error: error.message });
@@ -107,20 +107,44 @@ export const verifyCode = async (req: Request, res: Response) => {
 
 
 export const Login = async (req: Request, res: Response) => {
-  const { username, password } = req.body;
-  if (!username || !password) {
+  const { email, password } = req.body;
+  if (!email || !password) {
     res.status(400).json({ error: 'Username and password are required' });
     return;
   }
   try {
-    const user = await db
+    const [user] = await db
       .select()
       .from(users)
-      .where(eq(users.email, username));
+      .where(eq(users.email, email));
+
+      if(!user){
+        res.status(404).json({message : "Invalid Credentials !!"});
+        return;
+      }
+
+      const passValid = bcrypt.compareSync(password , user.password);
+      if(!passValid){
+        res.status(404).json({message : "Invalid Credentials !!"});
+        return;
+      }
+
+      const token = jwt.sign(
+        {
+          id: user.id,
+          first_name: user.firstName,
+          last_name: user.lastName,
+          email: user.email,
+          role: user.role,
+          verified: user.verified,
+        },
+        process.env.JWT_SECRET as string,
+        { expiresIn: "15m" }
+      );
     res.status(200).json(user);
     return;
   } catch (error) {
-    console.error("Register error:", error); // مهم
+    console.error("Register error:", error); 
     res.status(500).json({ message: "Internal Server Error" });
     return;
   }
