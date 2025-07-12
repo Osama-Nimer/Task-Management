@@ -141,7 +141,7 @@ export const Login = async (req: Request, res: Response) => {
         process.env.JWT_SECRET as string,
         { expiresIn: "15m" }
       );
-    res.status(200).json(user);
+    res.status(200).json({Message : "You have been Logedin Successfully !" , token});
     return;
   } catch (error) {
     console.error("Register error:", error); 
