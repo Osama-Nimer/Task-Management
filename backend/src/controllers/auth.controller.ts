@@ -107,7 +107,7 @@ export const verifyCode = async (req: Request, res: Response) => {
 
 
 export const Login = async (req: Request, res: Response) => {
-  const { email, password } = req.body;
+  const { email , password } = req.body;
   if (!email || !password) {
     res.status(400).json({ error: 'Username and password are required' });
     return;
@@ -122,13 +122,38 @@ export const Login = async (req: Request, res: Response) => {
         res.status(404).json({message : "Invalid Credentials !!"});
         return;
       }
-
-      const passValid = bcrypt.compareSync(password , user.password);
-      if(!passValid){
-        res.status(404).json({message : "Invalid Credentials !!"});
+      
+      if (user.lockoutUntil && new Date(user.lockoutUntil) > new Date()) 
+        {
+        const remainingTime = Math.ceil(
+          (new Date(user.lockoutUntil).getTime() - new Date().getTime()) / 1000);
+        res.status(400).json({message :`Account is locked. Try again in ${remainingTime} seconds.` })
         return;
       }
-
+      const passValid = bcrypt.compareSync(password , user.password);
+      if (!passValid) {
+        const updatedFailedAttempts = user.failedLoginAttempts + 1;
+        let lockoutTime = null;
+        if (updatedFailedAttempts >= 5 && updatedFailedAttempts < 10) {
+          lockoutTime = new Date(Date.now() + 30 * 1000);
+        } else if (
+          updatedFailedAttempts >= 10 &&
+          updatedFailedAttempts < 15
+        ) {
+          lockoutTime = new Date(Date.now() + 2 * 60 * 1000);
+        } else if (updatedFailedAttempts >= 15) {
+          lockoutTime = new Date(
+            Date.now() + updatedFailedAttempts * 60 * 1000
+          );
+        }
+  
+        await db
+        .update(users)
+        .set({failedLoginAttempts :updatedFailedAttempts , lockoutUntil : lockoutTime})
+        .where(eq(users.email , email));
+        res.status(400).json({ message: "Invalid Credentials" });
+        return;
+      }
       const token = jwt.sign(
         {
           id: user.id,
