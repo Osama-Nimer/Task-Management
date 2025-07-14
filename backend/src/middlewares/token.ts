@@ -1,17 +1,17 @@
-import jsonwebtoken from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 import { db } from '../configs/db.config'; 
 import { users } from "../db/schema";
 import { eq } from 'drizzle-orm';
 const JWT_SECRET = process.env.JWT_SECRET || "ieeeUltraSecret";
 export const createToken = (userId: number): string => {
-  const token = jsonwebtoken.sign({ userId }, JWT_SECRET, { expiresIn: "15m" });
+  const token = jwt.sign({ userId }, JWT_SECRET, { expiresIn: "15m" });
   return token;
 };
 
 export const verifyToken = async (token: string) => {
   try {
-    const decoded = jsonwebtoken.verify(token, JWT_SECRET);
-    const { userId } = decoded as { userId: number };
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!)
+    const { id: userId } = decoded as { id: number }; 
 
     const usersList = await db.select().from(users).where(eq(users.id, userId));
 
