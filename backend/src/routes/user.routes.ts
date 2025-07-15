@@ -12,13 +12,13 @@ router.get("/getAllUsers",
 
 router.get("/getUserByEmail",
         authMiddleware ,
-        isAuthorizedRole("Admin" , "User"),
+        isAuthorizedRole("Admin" , "user"),
         getUserbyeamil
     );
 
 router.get("/getUserById",
         authMiddleware ,
-        isAuthorizedRole("Admin" , "User"),
+        isAuthorizedRole("Admin" , "user"),
         getUserbyId
     );
 
