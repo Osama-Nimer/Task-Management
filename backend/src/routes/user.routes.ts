@@ -1,5 +1,5 @@
 import  express  from "express";
-import { getAllUsers , getUserbyeamil} from "../controllers/user.controller";
+import { getAllUsers , getUserbyId, getUserbyeamil} from "../controllers/user.controller";
 import { authMiddleware } from "../middlewares/auth.middleware";
 import { isAuthorizedRole } from "../middlewares/role.middleware";
 const router = express.Router();
@@ -12,8 +12,14 @@ router.get("/getAllUsers",
 
 router.get("/getUserByEmail",
         authMiddleware ,
-        isAuthorizedRole("Admin"),
+        isAuthorizedRole("Admin" , "User"),
         getUserbyeamil
+    );
+
+router.get("/getUserById",
+        authMiddleware ,
+        isAuthorizedRole("Admin" , "User"),
+        getUserbyId
     );
 
 export default router;
