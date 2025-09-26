@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 import { db } from '../configs/db.config'; 
 import { users } from "../db/schema";
 import { eq } from 'drizzle-orm';
-const JWT_SECRET = process.env.JWT_SECRET || "ieeeUltraSecret";
+const JWT_SECRET = process.env.JWT_SECRET || "";
 export const createToken = (userId: number): string => {
   const token = jwt.sign({ userId }, JWT_SECRET, { expiresIn: "15m" });
   return token;
